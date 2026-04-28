@@ -1,0 +1,10 @@
+venv/
+node_modules/
+dist/
+build/
+*.joblib
+__pycache__/
+.env
+.DS_Store
+pure_chess.csv
+cleaned_chess_data.csv
