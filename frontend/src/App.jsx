@@ -1,8 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Chess } from 'chess.js';
 import axios from 'axios';
 import './index.css';
+
+const boardTheme = {
+  light: { type: 'matrix', color: '#1e293b' },
+  dark: { type: 'matrix', color: '#0f172a' },
+};
+
+const pieceTheme = (piece) => {
+  const pieces = {
+    w: { K: '♔', Q: '♕', R: '♖', B: '♗', N: '♘', P: '♙' },
+    b: { K: '♚', Q: '♛', R: '♜', B: '♝', N: '♞', P: '♟' },
+  };
+  return (
+    <div style={{
+      color: piece.startsWith('w') ? '#f8fafc' : '#475569',
+      fontSize: '42px',
+      lineHeight: 1,
+      fontFamily: 'Georgia, serif',
+    }}>
+      {pieces[piece.charAt(0)][piece.charAt(1)]}
+    </div>
+  );
+};
 
 function App() {
   const [game, setGame] = useState(new Chess());
@@ -13,16 +35,20 @@ function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    try {
-      const newGame = new Chess();
-      if (pgn.trim()) {
-        newGame.loadPgn(pgn);
+    let timeoutId;
+    const updateBoard = () => {
+      try {
+        const newGame = new Chess();
+        if (pgn.trim()) {
+          newGame.loadPgn(pgn);
+        }
+        setGame(newGame);
+        setError(null);
+      } catch (err) {
       }
-      setGame(newGame);
-      setError(null);
-    } catch (err) {
-      setError('Invalid PGN format');
-    }
+    };
+    timeoutId = setTimeout(updateBoard, 300);
+    return () => clearTimeout(timeoutId);
   }, [pgn]);
 
   const predictElo = async () => {
@@ -52,7 +78,17 @@ function App() {
   return (
     <div className="container">
       <div className="board-section">
-        <Chessboard position={game.fen()} boardWidth={450} />
+        <Chessboard 
+          position={game.fen()} 
+          boardWidth={450}
+          customBoardStyle={{
+            borderRadius: '16px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+          }}
+          customDarkSquareStyle={{ backgroundColor: '#0f172a' }}
+          customLightSquareStyle={{ backgroundColor: '#1e293b' }}
+          customPieces={pieceTheme}
+        />
       </div>
       <div className="control-section">
         <div className="header">
