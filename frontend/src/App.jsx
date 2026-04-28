@@ -18,7 +18,7 @@ const pieceTheme = (piece) => {
     <div style={{
       color: piece.startsWith('w') ? '#f8fafc' : '#475569',
       fontSize: '42px',
-      lineHeight: 1,
+      lineHeight: 0.85,
       fontFamily: 'Georgia, serif',
     }}>
       {pieces[piece.charAt(0)][piece.charAt(1)]}
@@ -85,8 +85,8 @@ function App() {
             borderRadius: '16px',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
           }}
-          customDarkSquareStyle={{ backgroundColor: '#0f172a' }}
-          customLightSquareStyle={{ backgroundColor: '#1e293b' }}
+          customDarkSquareStyle={{ backgroundColor: '#0f172a', border: 'none' }}
+          customLightSquareStyle={{ backgroundColor: '#1e293b', border: 'none' }}
           customPieces={pieceTheme}
         />
       </div>
