@@ -59,7 +59,7 @@ function App() {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post('http://localhost:8000/predict', { pgn });
+      const response = await axios.post('https://elopredictor.onrender.com/predict', { pgn });
       setWhiteElo(Math.round(response.data.white_elo));
       setBlackElo(Math.round(response.data.black_elo));
     } catch (err) {
