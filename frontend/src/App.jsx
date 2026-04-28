@@ -34,8 +34,8 @@ function App() {
     setError(null);
     try {
       const response = await axios.post('http://localhost:8000/predict', { pgn });
-      setWhiteElo(response.data.white_elo);
-      setBlackElo(response.data.black_elo);
+      setWhiteElo(Math.round(response.data.white_elo));
+      setBlackElo(Math.round(response.data.black_elo));
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to predict ELO');
     } finally {
@@ -43,31 +43,61 @@ function App() {
     }
   };
 
+  const getRatingPercent = (elo) => {
+    const minElo = 800;
+    const maxElo = 2800;
+    return Math.min(100, Math.max(0, ((elo - minElo) / (maxElo - minElo)) * 100));
+  };
+
   return (
     <div className="container">
       <div className="board-section">
-        <Chessboard position={game.fen()} boardWidth={500} />
+        <Chessboard position={game.fen()} boardWidth={450} />
       </div>
       <div className="control-section">
-        <h2>Chess ELO Predictor</h2>
-        <textarea
-          placeholder="Paste PGN here..."
-          value={pgn}
-          onChange={(e) => setPgn(e.target.value)}
-        />
+        <div className="header">
+          <h1>Chess ELO Predictor</h1>
+          <p className="subtitle">Paste a PGN to predict player ratings</p>
+        </div>
+        
+        <div className="pgn-input-wrapper">
+          <label>PGN Input</label>
+          <textarea
+            placeholder="Paste your PGN here (e.g., 1. e4 e5 2. Nf3 Nc6 ...)"
+            value={pgn}
+            onChange={(e) => setPgn(e.target.value)}
+          />
+        </div>
+        
         <button onClick={predictElo} disabled={loading}>
-          {loading ? 'Predicting...' : 'Predict ELO'}
+          {loading ? 'Analyzing...' : 'Predict ELO'}
         </button>
+        
         {error && <div className="error">{error}</div>}
+        
         {(whiteElo !== null && blackElo !== null) && (
           <div className="results">
-            <div className="result-card white-result">
-              <h3>White ELO</h3>
-              <p>{whiteElo}</p>
+            <div className="result-card white">
+              <h3>White</h3>
+              <p className="elo-value">{whiteElo}</p>
+              <p className="elo-label">predicted ELO</p>
+              <div className="rating-bar">
+                <div 
+                  className="rating-fill" 
+                  style={{ width: `${getRatingPercent(whiteElo)}%` }}
+                />
+              </div>
             </div>
-            <div className="result-card black-result">
-              <h3>Black ELO</h3>
-              <p>{blackElo}</p>
+            <div className="result-card black">
+              <h3>Black</h3>
+              <p className="elo-value">{blackElo}</p>
+              <p className="elo-label">predicted ELO</p>
+              <div className="rating-bar">
+                <div 
+                  className="rating-fill" 
+                  style={{ width: `${getRatingPercent(blackElo)}%` }}
+                />
+              </div>
             </div>
           </div>
         )}
