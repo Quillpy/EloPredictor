@@ -5,6 +5,8 @@ import joblib
 import chess.pgn
 import io
 import os
+import numpy as np
+from scipy.sparse import hstack, csr_matrix
 
 app = FastAPI()
 
@@ -31,6 +33,25 @@ def load_models():
 class PredictionRequest(BaseModel):
     pgn: str
 
+def extract_features(moves):
+    tokens = moves.split()
+
+    num_moves = len(tokens)
+    checks = sum('+' in t or '#' in t for t in tokens)
+    captures = sum('x' in t for t in tokens)
+    castles = sum(t in ['O-O', 'O-O-O'] for t in tokens)
+    promotions = sum('=' in t for t in tokens)
+    avg_len = np.mean([len(t) for t in tokens]) if tokens else 0
+
+    return [
+        num_moves,
+        checks,
+        captures,
+        castles,
+        promotions,
+        avg_len
+    ]
+
 @app.post("/predict")
 def predict_elo(req: PredictionRequest):
     if not vectorizer:
@@ -50,7 +71,10 @@ def predict_elo(req: PredictionRequest):
         
     moves_str = " ".join(moves)
     
-    X = vectorizer.transform([moves_str])
+    X_text = vectorizer.transform([moves_str])
+    X_num = csr_matrix([extract_features(moves_str)])
+    X = hstack([X_text, X_num])
+    
     white_elo = model_white.predict(X)[0]
     black_elo = model_black.predict(X)[0]
     
